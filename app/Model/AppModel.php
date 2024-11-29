@@ -92,7 +92,7 @@ class AppModel extends Model
         111 => false, 112 => false, 113 => true, 114 => false, 115 => false, 116 => false,
         117 => false, 118 => false, 119 => false, 120 => false, 121 => false, 122 => false,
         123 => false, 124 => false, 125 => false, 126 => false, 127 => false, 128 => false,
-        129 => false, 130 => false, 131 => false, 132 => false, 133 => false,
+        129 => false, 130 => false, 131 => false, 132 => false, 133 => false, 134 => true,
     );
 
     const ADVANCED_UPDATES_DESCRIPTION = array(
@@ -2271,6 +2271,9 @@ class AppModel extends Model
                     PRIMARY KEY (`id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
                 $indexArray[] = array('event_report_template_variables', 'name');
+                break;
+            case 134:
+                $sqlArray[] = "ALTER TABLE `roles` ADD `perm_sync_internal` tinyint(1) NOT NULL DEFAULT 0;";
                 break;
             case 'fixNonEmptySharingGroupID':
                 $sqlArray[] = 'UPDATE `events` SET `sharing_group_id` = 0 WHERE `distribution` != 4;';

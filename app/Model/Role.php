@@ -234,6 +234,12 @@ class Role extends AppModel
                 'readonlyenabled' => true,
                 'title' => __('Synchronisation permission, can be used to connect two MISP instances create data on behalf of other users. Make sure that the role with this permission has also access to tagging and tag editing rights.')
             ),
+            'perm_sync_internal' => array(
+                'id' => 'RolePermSyncInternal',
+                'text' => 'Internal Sync Actions',
+                'readonlyenabled' => false,
+                'title' => __('Internal Synchronisation permission, can be use to synchronise data with the internal strategy where distribution won\'t be downgraded after PULLing.')
+            ),
             'perm_audit' => array(
                 'id' => 'RolePermAudit',
                 'text' => 'Audit Actions',

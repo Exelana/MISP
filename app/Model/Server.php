@@ -301,7 +301,7 @@ class Server extends AppModel
      * @param array $pullRules
      * @return bool Return true if event was emptied by pull rules
      */
-    private function __updatePulledEventBeforeInsert(array &$event, array $server, array $user, array $pullRules)
+    private function __updatePulledEventBeforeInsert(array &$event, array $server, array $user, array $pullRules, $remotePermSyncInternal = false)
     {
         $pullRulesEmptiedEvent = false;
         // we have an Event array
@@ -311,7 +311,7 @@ class Server extends AppModel
             $event['Event']['distribution'] = '1';
         }
         // Distribution
-        if (empty(Configure::read('MISP.host_org_id')) || !$server['Server']['internal'] ||  Configure::read('MISP.host_org_id') != $server['Server']['org_id']) {
+        if (empty(Configure::read('MISP.host_org_id')) || !$server['Server']['internal'] ||  Configure::read('MISP.host_org_id') != $server['Server']['org_id'] || !$remotePermSyncInternal) {
             switch ($event['Event']['distribution']) {
                 case 1:
                     // if community only, downgrade to org only after pull
@@ -571,7 +571,9 @@ class Server extends AppModel
             return false;
         }
 
-        $pullRulesEmptiedEvent = $this->__updatePulledEventBeforeInsert($event, $serverSync->server(), $user, $serverSync->pullRules());
+        $remoteUser = $serverSync->cachedUserInfo();
+        $remotePermSyncInternal = !empty($remoteUser['Role']['perm_sync_internal']);
+        $pullRulesEmptiedEvent = $this->__updatePulledEventBeforeInsert($event, $serverSync->server(), $user, $serverSync->pullRules(), $remotePermSyncInternal);
 
         if (!$this->__checkIfEventSaveAble($event)) {
             if (!$pullRulesEmptiedEvent) { // The event is empty because of the filtering rule. This is not considered a failure
@@ -4921,6 +4923,7 @@ class Server extends AppModel
                 __('User') => $user['User']['email'],
                 __('Role name') => $user['Role']['name'] ?? __('Unknown, outdated instance'),
                 __('Sync flag') => isset($user['Role']['perm_sync']) ? ($user['Role']['perm_sync'] ? __('Yes') : __('No')) : __('Unknown, outdated instance'),
+                __('Sync Internal flag') => isset($user['Role']['perm_sync_internal']) ? ($user['Role']['perm_sync_internal'] ? __('Yes') : __('No')) : __('Unknown, outdated instance'),
             ];
             if ($response->getHeader('X-Auth-Key-Expiration')) {
                 $date = new DateTime($response->getHeader('X-Auth-Key-Expiration'));

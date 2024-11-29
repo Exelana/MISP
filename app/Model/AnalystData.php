@@ -1076,6 +1076,9 @@ class AnalystData extends AppModel
             'fields' => ['id', 'uuid']
         ])['Organisation']['uuid'];
 
+        $remoteUser = $serverSync->cachedUserInfo();
+        $remotePermSyncInternal = !empty($remoteUser['Role']['perm_sync_internal']);
+
         foreach ($analystDataUuids as $type => $entries) {
             $uuids = array_keys($entries);
             if (empty($uuids)) {
@@ -1091,7 +1094,7 @@ class AnalystData extends AppModel
                 }
     
                 foreach ($chunkedAnalystData as $analystData) {
-                    $analystData = $this->updatePulledBeforeInsert($analystData, $type, $serverSync->server(), $user, $serverSync->pullRules());
+                    $analystData = $this->updatePulledBeforeInsert($analystData, $type, $serverSync->server(), $user, $serverSync->pullRules(), $remotePermSyncInternal);
                     $savedResult = $this->captureAnalystData($user, $analystData, true, $serverOrgUUID, $serverSync->server());
                     if ($savedResult['success']) {
                         $saved += $savedResult['imported'];
@@ -1103,11 +1106,11 @@ class AnalystData extends AppModel
         return $saved;
     }
 
-    private function updatePulledBeforeInsert(array $analystData, $type, array $server, array $user, array $pullRules): array
+    private function updatePulledBeforeInsert(array $analystData, $type, array $server, array $user, array $pullRules, $remotePermSyncInternal = false): array
     {
         $analystData[$type]['locked'] = true;
 
-        if (empty(Configure::read('MISP.host_org_id')) || !$server['Server']['internal'] ||  Configure::read('MISP.host_org_id') != $server['Server']['org_id']) {
+        if (empty(Configure::read('MISP.host_org_id')) || !$server['Server']['internal'] ||  Configure::read('MISP.host_org_id') != $server['Server']['org_id'] || !$remotePermSyncInternal) {
             switch ($analystData[$type]['distribution']) {
                 case 1:
                     // if community only, downgrade to org only after pull

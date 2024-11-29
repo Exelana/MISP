@@ -1936,12 +1936,15 @@ class GalaxyCluster extends AppModel
             return false;
         }
 
-        $cluster = $this->updatePulledClusterBeforeInsert($cluster, $serverSync->server(), $user);
+        $remoteUser = $serverSync->cachedUserInfo();
+        $remotePermSyncInternal = !empty($remoteUser['Role']['perm_sync_internal']);
+
+        $cluster = $this->updatePulledClusterBeforeInsert($cluster, $serverSync->server(), $user, $remotePermSyncInternal);
         $result = $this->captureCluster($user, $cluster, $fromPull=true, $orgId=$serverSync->server()['Server']['org_id']);
         return $result['success'];
     }
 
-    private function updatePulledClusterBeforeInsert($cluster, $server, $user)
+    private function updatePulledClusterBeforeInsert($cluster, $server, $user, $remotePermSyncInternal = false)
     {
         // The cluster came from a pull, so it should be locked and distribution should be adapted.
         $cluster['GalaxyCluster']['locked'] = true;
@@ -1949,7 +1952,7 @@ class GalaxyCluster extends AppModel
             $cluster['GalaxyCluster']['distribution'] = '1';
         }
 
-        if (empty(Configure::read('MISP.host_org_id')) || !$server['Server']['internal'] || Configure::read('MISP.host_org_id') != $server['Server']['org_id']) {
+        if (empty(Configure::read('MISP.host_org_id')) || !$server['Server']['internal'] || Configure::read('MISP.host_org_id') != $server['Server']['org_id'] || !$remotePermSyncInternal) {
             switch ($cluster['GalaxyCluster']['distribution']) {
                 case 1:
                     $cluster['GalaxyCluster']['distribution'] = 0; // if community only, downgrade to org only after pull
