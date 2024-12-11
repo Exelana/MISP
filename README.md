@@ -111,7 +111,7 @@ Information, news and updates are also regularly posted on the MISP project [Mas
 
 Installation
 -------------
-For test- og production installations we recommend you check out the possible options on [misp-project.org/download](https://www.misp-project.org/download/).
+For test- or production-installations we recommend you check out the possible options on [misp-project.org/download](https://www.misp-project.org/download/).
 
 Documentation
 -------------
